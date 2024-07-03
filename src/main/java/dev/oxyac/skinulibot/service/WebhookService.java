@@ -1,10 +1,12 @@
 package dev.oxyac.skinulibot.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
+@Slf4j
 public class WebhookService {
 
     private final RestClient client;
@@ -16,9 +18,7 @@ public class WebhookService {
         this.token = token;
         this.webHook = webHook;
         this.secret = secret;
-        this.client = RestClient.builder()
-                .baseUrl("https://api.telegram.org")
-                .build();
+        this.client = RestClient.create("https://api.telegram.org");
     }
 
     public void assignToken() {
