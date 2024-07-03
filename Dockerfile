@@ -9,5 +9,5 @@ RUN mkdir -p /root/.ssh \
     && gradle build
 
 FROM bellsoft/liberica-openjre-debian:22
-COPY --from=build /build/build/libs/app.jar app.jar
+COPY --from=build /build/build/libs/skinulibot-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
