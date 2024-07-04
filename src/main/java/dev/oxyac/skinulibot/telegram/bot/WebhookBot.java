@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.webhook.starter.SpringTelegramWebhookBot;
 
@@ -22,15 +25,27 @@ public class WebhookBot extends SpringTelegramWebhookBot {
         super(
                 "update",
                 update -> {
+                    log.debug("Received update: {}", update);
+
                     String message_text = update.getMessage().getText();
                     long chat_id = update.getMessage().getChatId();
 
-                    log.debug("Received message: {}", message_text);
 
                     SendMessage message = SendMessage // Create a message object
                             .builder()
                             .chatId(chat_id)
                             .text(message_text)
+                            .replyMarkup(InlineKeyboardMarkup
+                                    .builder()
+                                    .keyboardRow(
+                                            new InlineKeyboardRow(InlineKeyboardButton
+                                                    .builder()
+                                                    .text("Update message text")
+                                                    .callbackData("update_msg_text")
+                                                    .build()
+                                            )
+                                    )
+                                    .build())
                             .build();
                     log.debug("Message: {}", message.toString());
 
