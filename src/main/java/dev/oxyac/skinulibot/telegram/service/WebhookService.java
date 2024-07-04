@@ -110,7 +110,7 @@ public class WebhookService {
             request.setAmount(total);
             requestRepository.save(request);
             StartRequestData req = new StartRequestData();
-            req.setIQId(update.getInlineQuery().getId());
+            req.setIq(update.getInlineQuery().getId());
             String json;
             try {
                 json = objectMapper.writeValueAsString(req);
@@ -171,7 +171,8 @@ public class WebhookService {
                     userInitiated.setName(update.getCallbackQuery().getFrom().getUserName());
                     userRepository.save(userInitiated);
                 }
-                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(finalData.getIQId());
+                log.debug(finalData.toString());
+                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(finalData.getIq());
                 request.setInitiatedBy(userInitiated);
                 requestRepository.save(request);
 
@@ -234,7 +235,8 @@ public class WebhookService {
             }
 
             Chat chat = update.getMessage().getChat();
-            Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(callbackData.getIQId());
+            log.debug(callbackData.toString());
+            Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(callbackData.getIq());
             request.setChatId(chat.getId());
             requestRepository.save(request);
 //            long chat_id = update.getMessage().getChatId();

@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 public class StartRequestData extends CallbackData {
     protected String a = "1";
-    private String iQId;
+    private String iq;
 }
