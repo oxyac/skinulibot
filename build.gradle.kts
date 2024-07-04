@@ -22,9 +22,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation:2.7.5")
     implementation("org.telegram:telegrambots-client:7.5.0")
-    implementation("org.telegram:telegrambots-springboot-webhook-starter:7.5.0")
-    implementation("org.telegram:telegrambots-meta:7.4.2")
 //    implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.5.0")
+    implementation("org.telegram:telegrambots-springboot-webhook-starter:7.5.0")
+
+    implementation("org.telegram:telegrambots-meta:7.4.2")
     implementation("org.jsoup:jsoup:1.15.3")
     compileOnly("org.projectlombok:lombok")
     compileOnly("javax.transaction:transaction-api:1.1-rev-1")
