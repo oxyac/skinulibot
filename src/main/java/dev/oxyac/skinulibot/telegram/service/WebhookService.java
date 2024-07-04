@@ -23,6 +23,7 @@ import org.telegram.telegrambots.meta.api.methods.updates.GetWebhookInfo;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.WebhookInfo;
+import org.telegram.telegrambots.meta.api.objects.chat.Chat;
 import org.telegram.telegrambots.meta.api.objects.chat.ChatFullInfo;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
@@ -96,8 +97,6 @@ public class WebhookService {
 
             String query = update.getInlineQuery().getQuery();
 
-            List<String> members = getChatFullInfo(update.getInlineQuery().getFrom().getId());
-            int memberCount = members.size();
 
             int total = 0;
             try {
@@ -105,10 +104,13 @@ public class WebhookService {
             } catch (NumberFormatException e) {
                 log.error("Failed to parse query: {}", query);
             }
-            double perMember = (float) total / memberCount;
-            perMember = Math.round(perMember * 100.0) / 100.0;
 
+            Request request = new Request();
+            request.setInlineQueryId(update.getInlineQuery().getId());
+            request.setAmount(total);
+            requestRepository.save(request);
             StartRequestData req = new StartRequestData();
+            req.setInlineQueryId(update.getInlineQuery().getId());
             String json;
             try {
                 json = objectMapper.writeValueAsString(req);
@@ -121,10 +123,9 @@ public class WebhookService {
                     .builder()
                     .id(UUID.randomUUID().toString())
                     .title("Подтвердить общую сумму: " + total + " тугриков")
-                    .description("Каждый участник скидывает по " + perMember + " тугриков. Всего участников: " + memberCount)
                     .inputMessageContent(InputTextMessageContent
                             .builder()
-                            .messageText("Скидываются весь чат - " + total + " тугриков\nКаждый участник скидывает по " + perMember + " тугриков. Всего участников: " + memberCount + "\n")
+                            .messageText("Скидываeтся весь чат - " + total + " тугриков")
                             .build())
                     .replyMarkup(InlineKeyboardMarkup
                             .builder()
@@ -148,7 +149,7 @@ public class WebhookService {
 
             try {
                 log.debug("Sending answerInlineQuery: {}", answerInlineQuery);
-                telegramClient.execute(answerInlineQuery); // Sending our message object to user
+                Boolean a = telegramClient.execute(answerInlineQuery); // Sending our message object to user
             } catch (TelegramApiException e) {
                 log.error(String.valueOf(e));
             }
@@ -170,12 +171,11 @@ public class WebhookService {
                     userInitiated.setName(update.getCallbackQuery().getFrom().getUserName());
                     userRepository.save(userInitiated);
                 }
-                Request request = new Request();
-                request.setAmount(finalData.getTotal());
+                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(finalData.getInlineQueryId());
                 request.setInitiatedBy(userInitiated);
                 requestRepository.save(request);
 
-                List<String> members = getChatFullInfo(Long.valueOf(update.getCallbackQuery().getChatInstance()));
+                List<String> members = getChatFullInfo(request.getChatId());
 
                 InlineKeyboardRow row = new InlineKeyboardRow();
                 members.forEach(member -> {
@@ -222,7 +222,20 @@ public class WebhookService {
             }
 
         } else if (update.hasMessage()) {
-//            String message_text = update.getMessage().getText();
+            if(update.getMessage().getReplyMarkup() == null) return;
+
+            StartRequestData callbackData = new StartRequestData();
+            try{
+                callbackData =
+                        objectMapper.readValue(update.getMessage().getReplyMarkup().getKeyboard().getFirst().getFirst().getCallbackData(), StartRequestData.class);
+            } catch (Exception e) {
+                log.error("Failed to parse message", e);
+            }
+
+            Chat chat = update.getMessage().getChat();
+            Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(callbackData.getInlineQueryId());
+            request.setChatId(chat.getId());
+            requestRepository.save(request);
 //            long chat_id = update.getMessage().getChatId();
 //
 //
@@ -254,11 +267,13 @@ public class WebhookService {
     private List<String> getChatFullInfo(Long chatId) {
         GetChat chatRequest = GetChat.builder().chatId(chatId).build();
         ChatFullInfo chat = new ChatFullInfo();
+        log.debug("Chat request: {}", chatRequest.toString());
         try {
             chat = telegramClient.execute(chatRequest);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        log.debug("Chat info: {}", chat.toString());
         return chat.getActiveUsernames();
     }
 }

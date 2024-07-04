@@ -9,4 +9,5 @@ public class StartRequestData extends CallbackData {
     protected String action = "start_request";
     private double total;
     private double perMember;
+    private String inlineQueryId;
 }
