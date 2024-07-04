@@ -5,9 +5,11 @@ import dev.oxyac.skinulibot.telegram.TelegramClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
-import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputMessageContent;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultPhoto;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultsButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -15,7 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.webhook.starter.SpringTelegramWebhookBot;
 
-import java.util.function.Function;
+import java.util.ArrayList;
 
 @Component
 @Slf4j
@@ -32,14 +34,41 @@ public class WebhookBot extends SpringTelegramWebhookBot {
 
 
                     if (update.hasInlineQuery()) {
+                        ArrayList<InlineQueryResult> results = new ArrayList<InlineQueryResult>();
+
+                        results.add(InlineQueryResultPhoto
+                            .builder()
+                            .id("ID2")
+                            .photoUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
+                            .thumbnailUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
+                            .title("Скидывается весь чат")
+                            .caption("Скидывается весь чат 2")
+                            .showCaptionAboveMedia(true)
+                            .inputMessageContent(InputTextMessageContent
+                                .builder()
+                                .messageText("Скидывается весь чат 3")
+                                .build())
+                            .replyMarkup(InlineKeyboardMarkup
+                                .builder()
+                                .keyboardRow(
+                                    new InlineKeyboardRow(InlineKeyboardButton
+                                            .builder()
+                                            .text("Скидывается весь чат 4")
+                                            .callbackData("update_msg_text")
+                                            .build()
+                                    )
+                                )
+                                .build())
+                            .build());
                         AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
-                                .inlineQueryId(update.getInlineQuery().getId())
-                                .button(InlineQueryResultsButton
-                                        .builder()
-                                        .text("All members")
-                                        .startParameter("")
-                                        .build())
-                                .build();
+                            .inlineQueryId(update.getInlineQuery().getId())
+                            .results(results)
+                            .button(InlineQueryResultsButton
+                                .builder()
+                                .text("All members")
+                                .startParameter("")
+                                .build())
+                            .build();
                         try {
                             telegramClient.execute(answerInlineQuery); // Sending our message object to user
                         } catch (TelegramApiException e) {
