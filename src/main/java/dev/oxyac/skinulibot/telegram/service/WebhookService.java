@@ -177,6 +177,7 @@ public class WebhookService {
 
                 List<String> members = getChatFullInfo(request.getChatId());
 
+                double perMember = Math.round((request.getAmount() / members.size()) * 100.0) / 100.0;;
                 InlineKeyboardRow row = new InlineKeyboardRow();
                 members.forEach(member -> {
 
@@ -188,7 +189,7 @@ public class WebhookService {
                     }
                     Transaction transaction = new Transaction();
                     transaction.setCompleted(false);
-                    transaction.setAmount(finalData.getPerMember());
+                    transaction.setAmount(perMember);
                     transaction.setRequest(request);
                     transaction.setUser(user);
                     transactionRepository.save(transaction);
