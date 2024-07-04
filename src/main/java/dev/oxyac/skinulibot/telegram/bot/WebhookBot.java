@@ -1,5 +1,7 @@
 package dev.oxyac.skinulibot.telegram.bot;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.oxyac.skinulibot.service.WebhookService;
 import dev.oxyac.skinulibot.telegram.TelegramClient;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +27,9 @@ public class WebhookBot extends SpringTelegramWebhookBot {
 
     private final WebhookService webhookService;
     private final TelegramClient telegramClient;
+    private final ObjectMapper objectMapper;
 
-    public WebhookBot(WebhookService webhookService, TelegramClient telegramClient) {
+    public WebhookBot(WebhookService webhookService, TelegramClient telegramClient, ObjectMapper objectMapper) {
         super(
                 "update",
                 update -> {
@@ -65,11 +68,16 @@ public class WebhookBot extends SpringTelegramWebhookBot {
                                 add(allResult);
                             }})
                             .build();
+
                         try {
                             log.debug("Sending answerInlineQuery: {}", answerInlineQuery);
+                            String body = objectMapper.writeValueAsString(answerInlineQuery);
+                            log.debug("Sending answerInlineQuery JSON: {}", body);
                             telegramClient.execute(answerInlineQuery); // Sending our message object to user
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
                         }
                     } else if (update.hasMessage()) {
                         String message_text = update.getMessage().getText();
@@ -110,5 +118,6 @@ public class WebhookBot extends SpringTelegramWebhookBot {
         this.webhookService = webhookService;
 
         this.telegramClient = telegramClient;
+        this.objectMapper = objectMapper;
     }
 }
