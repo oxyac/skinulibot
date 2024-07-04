@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 public class PayTransactionData extends CallbackData {
     protected String a = "pay_transaction";
-    private Long transactionId;
+    private Long tid;
 }

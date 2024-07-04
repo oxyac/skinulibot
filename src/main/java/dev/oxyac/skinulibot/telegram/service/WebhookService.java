@@ -155,15 +155,22 @@ public class WebhookService {
             }
         }
         else if (update.hasCallbackQuery()) {
-            CallbackData data;
+            log.debug("CallbackQuery: {}", update.getCallbackQuery().getData());
+            CallbackData callback;
             try {
-                data = objectMapper.readValue(update.getCallbackQuery().getData(), CallbackData.class);
+                callback = objectMapper.readValue(update.getCallbackQuery().getData(), CallbackData.class);
             } catch (JsonProcessingException e) {
                 log.error("Failed to get callbackQuery data", e);
                 return;
             }
-            if(data.getA().equals("1")) {
-                StartRequestData finalData = objectMapper.convertValue(data, StartRequestData.class);
+            if(callback.getA().equals("1")) {
+                StartRequestData data;
+                try {
+                    data = objectMapper.readValue(update.getCallbackQuery().getData(), StartRequestData.class);
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to get callbackQuery data", e);
+                    return;
+                }
 
                 User userInitiated = userRepository.findByName(update.getCallbackQuery().getFrom().getUserName());
                 if(userInitiated == null) {
@@ -171,8 +178,8 @@ public class WebhookService {
                     userInitiated.setName(update.getCallbackQuery().getFrom().getUserName());
                     userRepository.save(userInitiated);
                 }
-                log.debug(finalData.toString());
-                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(finalData.getIq());
+                log.debug(data.toString());
+                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(data.getIq());
                 request.setInitiatedBy(userInitiated);
                 requestRepository.save(request);
 
@@ -197,7 +204,7 @@ public class WebhookService {
 
 
                     PayTransactionData payTransactionData = new PayTransactionData();
-                    payTransactionData.setTransactionId(transaction.getId());
+                    payTransactionData.setTid(transaction.getId());
                     String json;
                     try {
                         json = objectMapper.writeValueAsString(payTransactionData);
