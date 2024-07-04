@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputMessageContent;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultPhoto;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultsButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -20,6 +21,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.webhook.starter.SpringTelegramWebhookBot;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -38,14 +40,10 @@ public class WebhookBot extends SpringTelegramWebhookBot {
 
                     if (update.hasInlineQuery()) {
 
-                        InlineQueryResultPhoto allResult = InlineQueryResultPhoto
+                        InlineQueryResultArticle allResult = InlineQueryResultArticle
                                 .builder()
-                                .id("ID3")
-                                .photoUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
-                                .thumbnailUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
+                                .id(UUID.randomUUID().toString())
                                 .title("Скидывается весь чат")
-                                .caption("Скидывается весь чат 2")
-                                .showCaptionAboveMedia(true)
 //                                .inputMessageContent(InputTextMessageContent
 //                                        .builder()
 //                                        .messageText("Скидывается весь чат 3")
