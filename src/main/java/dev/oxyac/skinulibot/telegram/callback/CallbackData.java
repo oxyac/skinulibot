@@ -6,5 +6,5 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CallbackData {
-    protected String action = null;
+    protected String a = null;
 }
