@@ -34,35 +34,36 @@ public class WebhookBot extends SpringTelegramWebhookBot {
 
 
                     if (update.hasInlineQuery()) {
-                        ArrayList<InlineQueryResult> results = new ArrayList<InlineQueryResult>();
 
-                        results.add(InlineQueryResultPhoto
-                            .builder()
-                            .id("ID2")
-                            .photoUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
-                            .thumbnailUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
-                            .title("Скидывается весь чат")
-                            .caption("Скидывается весь чат 2")
-                            .showCaptionAboveMedia(true)
-                            .inputMessageContent(InputTextMessageContent
+                        InlineQueryResultPhoto allResult = InlineQueryResultPhoto
                                 .builder()
-                                .messageText("Скидывается весь чат 3")
-                                .build())
-                            .replyMarkup(InlineKeyboardMarkup
-                                .builder()
-                                .keyboardRow(
-                                    new InlineKeyboardRow(InlineKeyboardButton
-                                            .builder()
-                                            .text("Скидывается весь чат 4")
-                                            .callbackData("update_msg_text")
-                                            .build()
-                                    )
-                                )
-                                .build())
-                            .build());
+                                .id("ID3")
+                                .photoUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
+                                .thumbnailUrl("https://designshack.net/wp-content/uploads/cssbuttontut-5.jpg")
+                                .title("Скидывается весь чат")
+                                .caption("Скидывается весь чат 2")
+                                .showCaptionAboveMedia(true)
+//                                .inputMessageContent(InputTextMessageContent
+//                                        .builder()
+//                                        .messageText("Скидывается весь чат 3")
+//                                        .build())
+//                                .replyMarkup(InlineKeyboardMarkup
+//                                        .builder()
+//                                        .keyboardRow(
+//                                                new InlineKeyboardRow(InlineKeyboardButton
+//                                                        .builder()
+//                                                        .text("Скидывается весь чат 4")
+//                                                        .callbackData("update_msg_text")
+//                                                        .build()
+//                                                )
+//                                        )
+//                                        .build())
+                                .build();
                         AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
                             .inlineQueryId(update.getInlineQuery().getId())
-                            .results(results)
+                            .results(new ArrayList<>() {{
+                                add(allResult);
+                            }})
                             .build();
                         try {
                             telegramClient.execute(answerInlineQuery); // Sending our message object to user
