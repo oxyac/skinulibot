@@ -63,11 +63,6 @@ public class WebhookBot extends SpringTelegramWebhookBot {
                         AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
                             .inlineQueryId(update.getInlineQuery().getId())
                             .results(results)
-                            .button(InlineQueryResultsButton
-                                .builder()
-                                .text("All members")
-                                .startParameter("")
-                                .build())
                             .build();
                         try {
                             telegramClient.execute(answerInlineQuery); // Sending our message object to user
