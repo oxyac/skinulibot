@@ -222,31 +222,31 @@ public class WebhookService {
             }
 
         } else if (update.hasMessage()) {
-            String message_text = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
-
-
-            SendMessage message = SendMessage
-                    .builder()
-                    .chatId(chat_id)
-                    .text(message_text)
-                    .replyMarkup(InlineKeyboardMarkup
-                            .builder()
-                            .keyboardRow(
-                                    new InlineKeyboardRow(InlineKeyboardButton
-                                            .builder()
-                                            .text("Update message text")
-                                            .callbackData("update_msg_text")
-                                            .build()
-                                    )
-                            )
-                            .build())
-                    .build();
-            try {
-                telegramClient.execute(message); // Sending our message object to user
-            } catch (TelegramApiException e) {
-                log.error(String.valueOf(e));
-            }
+//            String message_text = update.getMessage().getText();
+//            long chat_id = update.getMessage().getChatId();
+//
+//
+//            SendMessage message = SendMessage
+//                    .builder()
+//                    .chatId(chat_id)
+//                    .text(message_text)
+//                    .replyMarkup(InlineKeyboardMarkup
+//                            .builder()
+//                            .keyboardRow(
+//                                    new InlineKeyboardRow(InlineKeyboardButton
+//                                            .builder()
+//                                            .text("Update message text")
+//                                            .callbackData("update_msg_text")
+//                                            .build()
+//                                    )
+//                            )
+//                            .build())
+//                    .build();
+//            try {
+//                telegramClient.execute(message); // Sending our message object to user
+//            } catch (TelegramApiException e) {
+//                log.error(String.valueOf(e));
+//            }
         }
 
     }

@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public abstract class CallbackData {
+public class CallbackData {
     protected String action = null;
 }
