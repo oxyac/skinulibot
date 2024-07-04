@@ -175,7 +175,7 @@ public class WebhookService {
                 request.setInitiatedBy(userInitiated);
                 requestRepository.save(request);
 
-                List<String> members = getChatFullInfo(update.getCallbackQuery().getMessage().getChatId());
+                List<String> members = getChatFullInfo(Long.valueOf(update.getCallbackQuery().getChatInstance()));
 
                 InlineKeyboardRow row = new InlineKeyboardRow();
                 members.forEach(member -> {
