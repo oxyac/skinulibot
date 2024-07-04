@@ -13,12 +13,6 @@ public class TelegramWebhookConfig {
     public TelegramWebhookConfig(TelegramBotsSpringWebhookApplication telegramApplication, WebhookBot webhookBot) {
         this.telegramApplication = telegramApplication;
         this.webhookBot = webhookBot;
-
-        try {
-            telegramApplication.registerBot(webhookBot);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

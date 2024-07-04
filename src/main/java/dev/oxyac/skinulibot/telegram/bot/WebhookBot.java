@@ -32,7 +32,7 @@ public class WebhookBot extends SpringTelegramWebhookBot {
                             .chatId(chat_id)
                             .text(message_text)
                             .build();
-                    log.debug("Chat id: {}", message.toString());
+                    log.debug("Message: {}", message.toString());
 
                     try {
                         telegramClient.execute(message); // Sending our message object to user

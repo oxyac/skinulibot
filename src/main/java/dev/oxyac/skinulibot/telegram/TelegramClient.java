@@ -8,6 +8,6 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 public class TelegramClient extends OkHttpTelegramClient {
     public String token;
     public TelegramClient(@Value("${bot.token}") String token) {
-        super("bow%s".formatted(token));
+        super(token);
     }
 }
