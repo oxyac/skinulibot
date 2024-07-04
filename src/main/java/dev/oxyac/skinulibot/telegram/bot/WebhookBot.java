@@ -66,6 +66,7 @@ public class WebhookBot extends SpringTelegramWebhookBot {
                             }})
                             .build();
                         try {
+                            log.debug("Sending answerInlineQuery: {}", answerInlineQuery);
                             telegramClient.execute(answerInlineQuery); // Sending our message object to user
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
