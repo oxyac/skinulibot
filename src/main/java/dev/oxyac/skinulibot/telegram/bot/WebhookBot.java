@@ -44,21 +44,21 @@ public class WebhookBot extends SpringTelegramWebhookBot {
                                 .builder()
                                 .id(UUID.randomUUID().toString())
                                 .title("Скидывается весь чат")
-//                                .inputMessageContent(InputTextMessageContent
-//                                        .builder()
-//                                        .messageText("Скидывается весь чат 3")
-//                                        .build())
-//                                .replyMarkup(InlineKeyboardMarkup
-//                                        .builder()
-//                                        .keyboardRow(
-//                                                new InlineKeyboardRow(InlineKeyboardButton
-//                                                        .builder()
-//                                                        .text("Скидывается весь чат 4")
-//                                                        .callbackData("update_msg_text")
-//                                                        .build()
-//                                                )
-//                                        )
-//                                        .build())
+                                .inputMessageContent(InputTextMessageContent
+                                        .builder()
+                                        .messageText("Скидывается весь чат 3")
+                                        .build())
+                                .replyMarkup(InlineKeyboardMarkup
+                                        .builder()
+                                        .keyboardRow(
+                                                new InlineKeyboardRow(InlineKeyboardButton
+                                                        .builder()
+                                                        .text("Скидывается весь чат 4")
+                                                        .callbackData("update_msg_text")
+                                                        .build()
+                                                )
+                                        )
+                                        .build())
                                 .build();
                         AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
                             .inlineQueryId(update.getInlineQuery().getId())
