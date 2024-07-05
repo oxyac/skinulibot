@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
@@ -21,6 +22,8 @@ public class Request {
     private Long chatId;
 
     @CreationTimestamp
-    public Date date;
+    private Date date;
 
+    @OneToMany(mappedBy = "request")
+    private ArrayList<Transaction> transactions;
 }

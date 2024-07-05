@@ -33,6 +33,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,47 +98,61 @@ public class WebhookService {
 
             String query = update.getInlineQuery().getQuery();
 
+            String[] strArray = query.split(" ");
 
-            int total = 0;
-            try {
-                total = Integer.parseInt(query);
-            } catch (NumberFormatException e) {
-                log.error("Failed to parse query: {}", query);
-            }
-
+            double perMember = 0;
+            double total = 0;
             Request request = new Request();
             request.setInlineQueryId(update.getInlineQuery().getId());
-            request.setAmount(total);
-            requestRepository.save(request);
-            StartRequestData req = new StartRequestData();
-            req.setIq(update.getInlineQuery().getId());
-            String json;
-            try {
-                json = objectMapper.writeValueAsString(req);
-            } catch (JsonProcessingException e) {
-                log.error(String.valueOf(e));
-                return;
+
+            User userInitiated = userRepository.findByName(update.getInlineQuery().getFrom().getUserName());
+            if(userInitiated == null) {
+                userInitiated = new User();
+                userInitiated.setName(update.getInlineQuery().getFrom().getUserName());
+                userRepository.save(userInitiated);
             }
+            for (int i = 0; i < strArray.length; i++) {
+                if(i == 0){
+                    if(!strArray[i].matches("^[0-9]+(\\.[0-9]+)?$")) {
+                        return;
+                    }
+                    total = Double.parseDouble(strArray[i]);
+                    request.setAmount(total);
+                    request.setInitiatedBy(userInitiated);
+                    requestRepository.save(request);
+
+                    perMember = Math.round((total / (strArray.length - 1)) * 100.0) / 100.0;
+                }
+
+                User user = userRepository.findByName(strArray[i]);
+                if(user == null) {
+                    user = new User();
+                    user.setName(strArray[i]);
+                    userRepository.save(user);
+                }
+                Transaction transaction = new Transaction();
+                transaction.setCompleted(false);
+                transaction.setRequest(request);
+                transaction.setUser(user);
+                transaction.setAmount(perMember);
+                transactionRepository.save(transaction);
+
+
+            }
+
+            InlineKeyboardMarkup markup = this.buildReplyMarkup(request);
 
             InlineQueryResultArticle allResult = InlineQueryResultArticle
                     .builder()
                     .id(UUID.randomUUID().toString())
-                    .title("Подтвердить общую сумму: " + total + " тугриков")
+                    .title("Подтвердить пользователей")
                     .inputMessageContent(InputTextMessageContent
                             .builder()
-                            .messageText("Скидываeтся весь чат - " + total + " тугриков")
+                            .messageText("Скидываются " + (strArray.length - 1) +  " пользователей на общую сумму в - " + total + " тугриков. \n" +
+                                    "С каждого по " + perMember + " тугриков. \n" +
+                                    "Скидывать сюда - " + userInitiated.getName() + " ")
                             .build())
-                    .replyMarkup(InlineKeyboardMarkup
-                            .builder()
-                            .keyboardRow(
-                                    new InlineKeyboardRow(InlineKeyboardButton
-                                            .builder()
-                                            .text("-> Начать сбор <-")
-                                            .callbackData(json)
-                                            .build()
-                                    )
-                            )
-                            .build())
+                    .replyMarkup(markup)
                     .build();
 
             AnswerInlineQuery answerInlineQuery = AnswerInlineQuery.builder()
@@ -163,71 +178,35 @@ public class WebhookService {
                 log.error("Failed to get callbackQuery data", e);
                 return;
             }
-            if(callback.getA().equals("1")) {
-                StartRequestData data;
+            if(callback.getA().equals("pay")) {
+                PayTransactionData payTransactionData;
                 try {
-                    data = objectMapper.readValue(update.getCallbackQuery().getData(), StartRequestData.class);
+                    payTransactionData = objectMapper.readValue(update.getCallbackQuery().getData(), PayTransactionData.class);
                 } catch (JsonProcessingException e) {
                     log.error("Failed to get callbackQuery data", e);
                     return;
                 }
-
-                User userInitiated = userRepository.findByName(update.getCallbackQuery().getFrom().getUserName());
-                if(userInitiated == null) {
-                    userInitiated = new User();
-                    userInitiated.setName(update.getCallbackQuery().getFrom().getUserName());
-                    userRepository.save(userInitiated);
+                Transaction transaction = transactionRepository.findById(payTransactionData.getTid()).orElse(null);
+                if(transaction == null) {
+                    log.error("Transaction not found");
+                    return;
                 }
-                log.debug(data.toString());
-                Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(data.getIq());
-                request.setInitiatedBy(userInitiated);
-                requestRepository.save(request);
+                transaction.setCompleted(!transaction.isCompleted());
+                transactionRepository.save(transaction);
 
-                List<String> members = getChatFullInfo(request.getChatId());
-
-                double perMember = Math.round((request.getAmount() / members.size()) * 100.0) / 100.0;;
-                InlineKeyboardRow row = new InlineKeyboardRow();
-                members.forEach(member -> {
-
-                    User user = userRepository.findByName(member);
-                    if(user == null) {
-                        user = new User();
-                        user.setName(member);
-                        userRepository.save(user);
-                    }
-                    Transaction transaction = new Transaction();
-                    transaction.setCompleted(false);
-                    transaction.setAmount(perMember);
-                    transaction.setRequest(request);
-                    transaction.setUser(user);
-                    transactionRepository.save(transaction);
+                InlineKeyboardMarkup markup = this.buildReplyMarkup(transaction.getRequest());
 
 
-                    PayTransactionData payTransactionData = new PayTransactionData();
-                    payTransactionData.setTid(transaction.getId());
-                    String json;
-                    try {
-                        json = objectMapper.writeValueAsString(payTransactionData);
-                    } catch (JsonProcessingException e) {
-                        log.error(String.valueOf(e));
-                        return;
-                    }
-                    row.add(
-                            InlineKeyboardButton.builder()
-                                    .text(member + " - " + ((transaction.isCompleted() ? "\\xE2\\x9C\\x94" : "\\xE2\\x9C\\x96")) )
-                                    .callbackData(json)
-                                    .build());
-                });
-
-                InlineKeyboardMarkup markup = InlineKeyboardMarkup
-                        .builder()
-                        .keyboardRow(
-                                row
-                        )
+                EditMessageReplyMarkup editMessageReplyMarkup = EditMessageReplyMarkup.builder()
+                        .inlineMessageId(transaction.getRequest().getInlineQueryId())
+                        .replyMarkup(markup)
                         .build();
-                EditMessageReplyMarkup.builder().inlineMessageId(update.getCallbackQuery().getInlineMessageId())
-                        .replyMarkup(null)
-                        .build();
+                try {
+                    telegramClient.execute(editMessageReplyMarkup); // Sending our message object to user
+                } catch (TelegramApiException e) {
+                    log.error(String.valueOf(e));
+                }
+
             }
 
         } else if (update.hasMessage()) {
@@ -285,5 +264,38 @@ public class WebhookService {
         }
         log.debug("Chat info: {}", chat.toString());
         return chat.getActiveUsernames();
+    }
+
+    private InlineKeyboardMarkup buildReplyMarkup(Request request) {
+        ArrayList<Transaction>  transactions = request.getTransactions();
+        InlineKeyboardRow row = new InlineKeyboardRow();
+
+        Collection<InlineKeyboardRow> keyboard = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            PayTransactionData payTransactionData = new PayTransactionData();
+            payTransactionData.setTid(transaction.getId());
+            String json;
+            try {
+                json = objectMapper.writeValueAsString(payTransactionData);
+            } catch (JsonProcessingException e) {
+                log.error(String.valueOf(e));
+                return null;
+            }
+            row.add(
+                    InlineKeyboardButton.builder()
+                            .text(transaction.getUser().getName() + " - " + ((transaction.isCompleted() ? "\\xE2\\x9C\\x94" : "\\xE2\\x9C\\x96")) )
+                            .callbackData(json)
+                            .build());
+
+            if(row.size() == 2) {
+                keyboard.add(row);
+            }
+        }
+
+
+        return InlineKeyboardMarkup
+                .builder()
+                .keyboard(keyboard)
+                .build();
     }
 }

@@ -6,6 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class PayTransactionData extends CallbackData {
-    protected String a = "pay_transaction";
+    protected String a = "pay";
     private Long tid;
 }
