@@ -141,6 +141,7 @@ public class WebhookService {
             }
 
             InlineKeyboardMarkup markup = this.buildReplyMarkup(request);
+            if(markup == null) return;
 
             InlineQueryResultArticle allResult = InlineQueryResultArticle
                     .builder()
@@ -267,7 +268,10 @@ public class WebhookService {
     }
 
     private InlineKeyboardMarkup buildReplyMarkup(Request request) {
-        ArrayList<Transaction>  transactions = request.getTransactions();
+        ArrayList<Transaction> transactions = transactionRepository.findByRequest(request);
+        if(transactions == null) {
+            return null;
+        }
         InlineKeyboardRow row = new InlineKeyboardRow();
 
         Collection<InlineKeyboardRow> keyboard = new ArrayList<>();
