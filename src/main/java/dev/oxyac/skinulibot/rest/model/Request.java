@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Setter
@@ -25,5 +26,5 @@ public class Request {
     private Date date;
 
     @OneToMany(mappedBy = "request")
-    private ArrayList<Transaction> transactions;
+    private List<Transaction> transactions;
 }

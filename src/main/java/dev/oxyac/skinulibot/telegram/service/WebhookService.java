@@ -122,6 +122,7 @@ public class WebhookService {
                     requestRepository.save(request);
 
                     perMember = Math.round((total / (strArray.length - 1)) * 100.0) / 100.0;
+                    continue;
                 }
 
                 User user = userRepository.findByName(strArray[i]);
@@ -211,21 +212,6 @@ public class WebhookService {
             }
 
         } else if (update.hasMessage()) {
-            if(update.getMessage().getReplyMarkup() == null) return;
-
-            StartRequestData callbackData = new StartRequestData();
-            try{
-                callbackData =
-                        objectMapper.readValue(update.getMessage().getReplyMarkup().getKeyboard().getFirst().getFirst().getCallbackData(), StartRequestData.class);
-            } catch (Exception e) {
-                log.error("Failed to parse message", e);
-            }
-
-            Chat chat = update.getMessage().getChat();
-            log.debug(callbackData.toString());
-            Request request = requestRepository.findByInlineQueryIdOrderByDateDesc(callbackData.getIq());
-            request.setChatId(chat.getId());
-            requestRepository.save(request);
 //            long chat_id = update.getMessage().getChatId();
 //
 //
@@ -287,7 +273,7 @@ public class WebhookService {
             }
             row.add(
                     InlineKeyboardButton.builder()
-                            .text(transaction.getUser().getName() + " - " + ((transaction.isCompleted() ? "\\xE2\\x9C\\x94" : "\\xE2\\x9C\\x96")) )
+                            .text(transaction.getUser().getName() + " - " + ((transaction.isCompleted() ? "✔" : "✖")) )
                             .callbackData(json)
                             .build());
 
